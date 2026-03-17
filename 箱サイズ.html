@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ヒノキマス箱サイズシミュレーター（修正版）</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    input {
+      margin: 5px;
+      width: 60px;
+      font-size: 16px;
+      padding: 5px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+
+    #layout {
+      display: none;
+      margin-top: 30px;
+      padding: 30px;
+      background: #fff2cc; /* ヒノキ色 */
+      border: 2px solid #e6d28c;
+      border-radius: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffe9a8;
+      border: 2px solid #d4b75c;
+      margin: 5px;
+      font-weight: bold;
+      font-size: 20px;
+      width: 60px;
+      height: 60px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>ヒノキマス箱サイズシミュレーター</h2>
+
+<p>数量入力</p>
+小：<input type="number" id="smallQty" value="4">
+大：<input type="number" id="largeQty" value="3">
+
+<button onclick="calculate()">計算</button>
+
+<div class="result" id="result"></div>
+<div id="layout"></div>
+
+<script>
+const SMALL = 5.6;
+const LARGE = 8.4;
+const GAP = 1;
+
+function calculate() {
+  const smallQty = parseInt(document.getElementById('smallQty').value) || 0;
+  const largeQty = parseInt(document.getElementById('largeQty').value) || 0;
+
+  const widthLarge = largeQty > 0 ? (LARGE * largeQty) + (largeQty + 1) * GAP : 0;
+  const widthSmall = smallQty > 0 ? (SMALL * smallQty) + (smallQty + 1) * GAP : 0;
+  const boxWidth = Math.max(widthLarge, widthSmall);
+
+  let boxHeight = 0;
+  if (largeQty > 0 && smallQty > 0) {
+    boxHeight = LARGE + SMALL + (3 * GAP);
+  } else if (largeQty > 0) {
+    boxHeight = LARGE + (2 * GAP);
+  } else if (smallQty > 0) {
+    boxHeight = SMALL + (2 * GAP);
+  }
+
+  document.getElementById('result').innerText =
+    `■ 箱サイズ\n横：${boxWidth.toFixed(1)} cm\n縦：${boxHeight.toFixed(1)} cm\n高さ：7 cm`;
+
+  const layout = document.getElementById('layout');
+  layout.style.display = 'block';
+
+  drawLayout(largeQty, smallQty);
+}
+
+function drawLayout(largeQty, smallQty) {
+  const layout = document.getElementById('layout');
+  layout.innerHTML = "";
+
+  function createRow(label, count) {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    for (let i = 0; i < count; i++) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.innerText = label;
+      row.appendChild(box);
+    }
+
+    return row;
+  }
+
+  // 小のみ
+  if (largeQty === 0 && smallQty > 0) {
+    if (smallQty <= 3) {
+      layout.appendChild(createRow('小', smallQty));
+    } else {
+      const top = Math.min(3, Math.ceil(smallQty / 2));
+      layout.appendChild(createRow('小', top));
+      layout.appendChild(createRow('小', smallQty - top));
+    }
+    return;
+  }
+
+  // 大のみ
+  if (smallQty === 0 && largeQty > 0) {
+    if (largeQty <= 3) {
+      layout.appendChild(createRow('大', largeQty));
+    } else {
+      const top = Math.min(3, Math.ceil(largeQty / 2));
+      layout.appendChild(createRow('大', top));
+      layout.appendChild(createRow('大', largeQty - top));
+    }
+    return;
+  }
+
+  // 両方
+  const putSmallOnTop = smallQty >= largeQty;
+
+  if (putSmallOnTop) {
+    layout.appendChild(createRow('小', smallQty));
+    layout.appendChild(createRow('大', largeQty));
+  } else {
+    layout.appendChild(createRow('大', largeQty));
+    layout.appendChild(createRow('小', smallQty));
+  }
+}
+</script>
+
+</body>
+</html>
